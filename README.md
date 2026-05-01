@@ -8,7 +8,7 @@
 
 ## Live Demo
 
-**[→ Open Interactive Explainer](https://github.com/david-spies/EquilibriumDynamics/blob/main/infinite_time_neural_ode_explainer.html)**
+**[→ Open Interactive Explainer](https://github.com/david-spies/EquilibriumDynamics/infinite_time_neural_ode_explainer.html)**
 
 > **Note:** For full interactivity (sliders, training simulator, clickable architecture), download and open locally, or host via GitHub Pages.
 

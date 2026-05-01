@@ -294,7 +294,7 @@ If you use this explainer or the methodology summary in academic work, please ci
 @misc{equilibriumdynamics2026,
   title        = {EquilibriumDynamics: An Interactive Explainer for Infinite Time Neural ODEs, PINNs, and Hybrid Architectures},
   year         = {2026},
-  howpublished = {\url{https://github.com/your-username/your-repo}},
+  howpublished = {\url{https://github.com/david-spies/EquilibriumDynamics}},
   note         = {Interactive explainer: infinite\_time\_neural\_ode\_explainer.html}
 }
 ```

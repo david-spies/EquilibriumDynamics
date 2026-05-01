@@ -1,4 +1,4 @@
-
+![EquilibriumDynamics](./equilibrium_dynamics_banner.svg)
 
 # EquilibriumDynamics
 

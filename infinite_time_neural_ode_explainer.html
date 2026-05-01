@@ -1,0 +1,413 @@
+
+<style>
+  :root { --tab-active: var(--color-background-primary); }
+  .tab-btn {
+    padding: 8px 18px; font-size: 13px; border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary); color: var(--color-text-secondary);
+    border-radius: var(--border-radius-md); cursor: pointer; transition: all .18s;
+    font-family: var(--font-sans);
+  }
+  .tab-btn.active {
+    background: var(--color-background-primary); color: var(--color-text-primary);
+    border-color: var(--color-border-primary); font-weight: 500;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .card {
+    background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px;
+  }
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px;
+    border-radius: var(--border-radius-md); font-weight: 500;
+  }
+  .badge-blue { background: var(--color-background-info); color: var(--color-text-info); }
+  .badge-green { background: var(--color-background-success); color: var(--color-text-success); }
+  .badge-warn { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .badge-danger { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .mono {
+    font-family: var(--font-mono); font-size: 12px; background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);
+    padding: 10px 14px; line-height: 1.65; color: var(--color-text-secondary); white-space: pre; overflow-x: auto;
+  }
+  .label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row > * { flex: 1; }
+  .sep { height: 0.5px; background: var(--color-border-tertiary); margin: 14px 0; }
+  .arch-row { display: flex; align-items: stretch; gap: 2px; margin: 8px 0; }
+  .arch-box {
+    flex: 1; border-radius: var(--border-radius-md); padding: 10px 8px; text-align: center;
+    font-size: 12px; font-weight: 500; border: 0.5px solid var(--color-border-tertiary);
+    display: flex; flex-direction: column; justify-content: center; gap: 4px; cursor: pointer;
+    transition: opacity .15s;
+  }
+  .arch-box:hover { opacity: .8; }
+  .arch-box .sub { font-size: 10px; font-weight: 400; opacity: .75; }
+  .arrow-right { display: flex; align-items: center; font-size: 16px; color: var(--color-text-tertiary); padding: 0 2px; }
+  .compare-row { display: flex; gap: 10px; }
+  .compare-col { flex: 1; }
+  .loss-bar-wrap { height: 8px; background: var(--color-background-secondary); border-radius: 4px; margin-top: 4px; overflow: hidden; }
+  .loss-bar { height: 100%; border-radius: 4px; transition: width .4s; }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  #epoch-display { font-size: 20px; font-weight: 500; }
+  h3 { font-size: 15px; font-weight: 500; margin: 0 0 10px; color: var(--color-text-primary); }
+  p.desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin: 0 0 10px; }
+  .formula { font-family: var(--font-mono); font-size: 13px; background: var(--color-background-secondary); padding: 8px 12px; border-radius: var(--border-radius-md); color: var(--color-text-primary); margin: 8px 0; }
+  .highlight { color: #EF9F27; font-weight: 500; }
+  .hl-blue { color: #378ADD; font-weight: 500; }
+  .hl-green { color: #3B6D11; font-weight: 500; }
+  .hl-teal { color: #0F6E56; font-weight: 500; }
+  @media (prefers-color-scheme: dark) { .hl-green { color: #97C459; } .hl-teal { color: #5DCAA5; } }
+</style>
+
+<div style="padding: 0.5rem 0 1.5rem;">
+  <h2 class="sr-only">Interactive explainer: Infinite Time Neural ODEs, PINNs, and hybrid architectures</h2>
+
+  <!-- Tabs -->
+  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px;">
+    <button class="tab-btn active" onclick="showTab('paradox')">Infinite Time Neural ODE</button>
+    <button class="tab-btn" onclick="showTab('pinn')">PINN Training</button>
+    <button class="tab-btn" onclick="showTab('arch')">Hybrid Architecture</button>
+    <button class="tab-btn" onclick="showTab('compare')">Method Comparison</button>
+  </div>
+
+  <!-- TAB 1: The Paradox -->
+  <div id="tab-paradox" class="tab-panel active">
+    <div class="card">
+      <h3>The core paradox</h3>
+      <p class="desc">Integrating a Neural ODE to a large fixed time <span class="mono" style="display:inline;padding:1px 5px;">T</span> is expensive — the solver makes O(T) function evaluations. But finding the <em>steady state</em> (t → ∞) costs only O(1) in the time dimension. Solving for less gets you there faster.</p>
+      <div class="row">
+        <div class="metric">
+          <div class="label">Standard ODE integration cost</div>
+          <div class="val" style="color: #E24B4A;">O(T)</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">Grows with integration horizon</div>
+        </div>
+        <div class="metric">
+          <div class="label">Steady-state (root-finding) cost</div>
+          <div class="val" style="color: #1D9E75;">O(1)</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">Independent of horizon length</div>
+        </div>
+        <div class="metric">
+          <div class="label">Gradient method</div>
+          <div class="val" style="color: #378ADD;">Implicit</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">No backprop through solver</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>The three acceleration techniques</h3>
+
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span class="badge badge-blue">1</span>
+          <span style="font-weight: 500; font-size: 13px;">Steady-state formulation</span>
+        </div>
+        <p class="desc" style="margin-left: 24px;">Instead of integrating dh/dt = f(h,t,θ), we define a loss on the fixed point h* where the dynamics vanish: f(h*, θ) = 0. The equilibrium IS the answer.</p>
+        <div class="formula" style="margin-left: 24px;">Find h* such that  <span class="highlight">f(h*, θ) = 0</span></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span class="badge badge-green">2</span>
+          <span style="font-weight: 500; font-size: 13px;">Root-finding forward pass (Broyden's method)</span>
+        </div>
+        <p class="desc" style="margin-left: 24px;">Quasi-Newton solvers like Broyden's method find h* directly in log-linear iterations — no step-by-step ODE integration required. This replaces the ODE solver's forward pass entirely.</p>
+        <div class="formula" style="margin-left: 24px;">h*<sub>n+1</sub> = h*<sub>n</sub> − <span class="hl-blue">J⁻¹</span> · f(h*<sub>n</sub>, θ)   <span style="opacity:.5">[quasi-Newton update]</span></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span class="badge badge-warn">3</span>
+          <span style="font-weight: 500; font-size: 13px;">Implicit differentiation (no adjoint integration)</span>
+        </div>
+        <p class="desc" style="margin-left: 24px;">Using the Implicit Function Theorem, gradients flow through the fixed-point equation algebraically. No backprop through solver steps, no vanishing gradients across long trajectories.</p>
+        <div class="formula" style="margin-left: 24px;">∂h*/∂θ = −<span class="highlight">(∂f/∂h*)</span>⁻¹ · <span class="hl-blue">∂f/∂θ</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Gauß–Legendre quadrature speed-up (non-steady systems)</h3>
+      <p class="desc">When a steady state doesn't exist, the reverse-time adjoint integral can be approximated in <strong>parallel</strong> using Gaussian quadrature nodes, outperforming sequential RK4/Dopri5 integrators by evaluating multiple time points simultaneously.</p>
+      <div class="row">
+        <div class="metric">
+          <div class="label">Sequential Dopri5 NFE</div>
+          <div class="val">~100–300</div>
+        </div>
+        <div class="metric">
+          <div class="label">Gauss–Legendre NFE</div>
+          <div class="val" style="color: #1D9E75;">~5–15</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">Parallelisable across quadrature nodes</div>
+        </div>
+      </div>
+      <button class="tab-btn" style="margin-top: 8px;" onclick="sendPrompt('Explain how Gauss–Legendre quadrature approximates the Neural ODE adjoint integral and why it parallelises better than Dormand–Prince')">Explain quadrature mechanics ↗</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: PINN Training -->
+  <div id="tab-pinn" class="tab-panel">
+    <div class="card">
+      <h3>Problem: solve dy/dx + 2xy = 0,  y(0) = 1</h3>
+      <p class="desc">The exact solution is y(x) = e<sup>−x²</sup>. A PINN approximates this without seeing any labelled (x, y) pairs — only the ODE residual and the initial condition act as supervision.</p>
+    </div>
+
+    <div class="card">
+      <h3>Loss function anatomy</h3>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 13px; font-weight: 500;">Physics loss (PDE residual)</span>
+            <span class="badge badge-blue">collocation pts</span>
+          </div>
+          <div class="formula">L_pde = 𝔼<sub>x</sub>[ (<span class="highlight">dy/dx + 2xy</span>)² ]</div>
+          <p class="desc" style="margin: 6px 0 0;">Computed via automatic differentiation. Penalises any predicted ŷ(x) that doesn't satisfy the ODE. No labelled data needed — only x-coordinates (collocation points).</p>
+        </div>
+        <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 13px; font-weight: 500;">Initial condition loss</span>
+            <span class="badge badge-green">boundary pt</span>
+          </div>
+          <div class="formula">L_ic = (<span class="hl-green">ŷ(0) − 1</span>)²</div>
+          <p class="desc" style="margin: 6px 0 0;">One scalar constraint anchoring the solution to the known initial condition y(0) = 1.</p>
+        </div>
+        <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; background: var(--color-background-secondary);">
+          <span style="font-size: 13px; font-weight: 500;">Total loss</span>
+          <div class="formula" style="background: var(--color-background-primary); margin-top: 8px;">L = <span class="highlight">L_pde</span> + <span class="hl-green">L_ic</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Interactive training simulator</h3>
+      <p class="desc">Simulate how losses decrease as the network trains. Adjust architecture depth and learning rate, then run epochs.</p>
+      <div class="row">
+        <div>
+          <div class="label">Hidden layers</div>
+          <input type="range" min="1" max="4" value="2" id="layers-slider" oninput="updateSim()" style="width: 100%;">
+          <div style="font-size: 12px; color: var(--color-text-secondary); text-align: center;" id="layers-label">2 layers × 50 neurons</div>
+        </div>
+        <div>
+          <div class="label">Learning rate (×10⁻³)</div>
+          <input type="range" min="1" max="10" value="3" id="lr-slider" oninput="updateSim()" style="width: 100%;">
+          <div style="font-size: 12px; color: var(--color-text-secondary); text-align: center;" id="lr-label">3 × 10⁻³</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 10px;">
+        <div class="metric" style="text-align: center;">
+          <div class="label">Epoch</div>
+          <div id="epoch-display">0</div>
+        </div>
+        <div class="metric" style="flex: 2;">
+          <div class="label">Physics loss (L_pde)</div>
+          <div id="pde-val" style="font-size: 14px; font-weight: 500;">1.000</div>
+          <div class="loss-bar-wrap"><div class="loss-bar" id="pde-bar" style="width: 100%; background: #E24B4A;"></div></div>
+        </div>
+        <div class="metric" style="flex: 2;">
+          <div class="label">IC loss (L_ic)</div>
+          <div id="ic-val" style="font-size: 14px; font-weight: 500;">1.000</div>
+          <div class="loss-bar-wrap"><div class="loss-bar" id="ic-bar" style="width: 100%; background: #378ADD;"></div></div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="tab-btn" onclick="runTraining()" id="train-btn">Run 500 epochs</button>
+        <button class="tab-btn" onclick="resetTraining()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Why no labelled data?</h3>
+      <p class="desc">The key insight: the ODE <em>itself</em> provides supervision everywhere in the domain. Auto-differentiation computes ∂ŷ/∂x exactly from the network's computation graph, so the residual <span class="mono" style="display:inline; padding: 1px 4px;">dy/dx + 2xy</span> can be evaluated at any x without knowing the true y(x). The network learns to satisfy the equation, not to fit labelled points.</p>
+      <button class="tab-btn" onclick="sendPrompt('Show me more PINN examples: the heat equation, Burgers equation, and a nonlinear ODE like the Lorenz system')">More PINN examples ↗</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: Architecture -->
+  <div id="tab-arch" class="tab-panel">
+    <div class="card">
+      <h3>NODE-ONet: hybrid PINN × Neural ODE operator network</h3>
+      <p class="desc">The state-of-the-art 2025/26 approach fuses four specialised components into a single trainable pipeline. Each component has a distinct job and can be swapped independently.</p>
+
+      <div class="arch-row" style="margin-top: 14px;">
+        <div class="arch-box" style="background: #E6F1FB; border-color: #B5D4F4; color: #0C447C;" onclick="sendPrompt('How does the encoder reduce sensor data to a latent state in NODE-ONet?')">
+          <div>Encoder</div>
+          <div class="sub">CNN / MLP<br>high-dim → z</div>
+        </div>
+        <div class="arrow-right">→</div>
+        <div class="arch-box" style="background: #E1F5EE; border-color: #9FE1CB; color: #085041;" onclick="sendPrompt('How does the Neural ODE layer evolve the latent state in NODE-ONet?')">
+          <div>Neural ODE</div>
+          <div class="sub">ż = f(z,θ)<br>latent evolution</div>
+        </div>
+        <div class="arrow-right">→</div>
+        <div class="arch-box" style="background: #FAEEDA; border-color: #FAC775; color: #633806;" onclick="sendPrompt('How does the Physics Head enforce PDE constraints during training?')">
+          <div>Physics head</div>
+          <div class="sub">PDE residual<br>regularises θ</div>
+        </div>
+        <div class="arrow-right">→</div>
+        <div class="arch-box" style="background: #EEEDFE; border-color: #CECBF6; color: #3C3489;" onclick="sendPrompt('What does the decoder do in NODE-ONet?')">
+          <div>Decoder</div>
+          <div class="sub">z(t) → field<br>spatial domain</div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: var(--color-text-tertiary); margin: 6px 0 0; text-align: center;">Click any component to learn more ↗</p>
+    </div>
+
+    <div class="card">
+      <h3>Three key advantages</h3>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-blue" style="margin-top: 1px; flex-shrink: 0;">Mesh-free</span>
+          <div style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.5;">Operates directly on scattered sensor readings — no 3D grid or mesh generation needed. Works with irregular, sparse, or moving observation points.</div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-green" style="margin-top: 1px; flex-shrink: 0;">Operator learning</span>
+          <div style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.5;">Learns the solution operator (initial condition → trajectory), not just one solution. After offline training, predicts new ICs in a single forward pass — no re-solving.</div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-warn" style="margin-top: 1px; flex-shrink: 0;">Lyapunov stability</span>
+          <div style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.5;">Finite-time Lyapunov Exponent regularisation penalises chaotic divergence in the latent ODE. Prevents exponential error growth in long-horizon predictions.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Training vs inference workflow</h3>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 180px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px;">
+          <div class="label" style="margin-bottom: 8px;">Offline training</div>
+          <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.7;">
+            1. Encode sensor data → z₀<br>
+            2. Evolve z via Neural ODE<br>
+            3. Physics head computes residuals<br>
+            4. Decode z(t) → solution field<br>
+            5. Backprop all four components jointly
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 180px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px;">
+          <div class="label" style="margin-bottom: 8px;">Online inference</div>
+          <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.7;">
+            1. Encode new IC → z₀<br>
+            2. Single forward pass through ODE layer<br>
+            3. Decode → full solution field<br>
+            <br>
+            <span style="color: #1D9E75; font-weight: 500;">No solver calls at inference time</span>
+          </div>
+        </div>
+      </div>
+      <button class="tab-btn" style="margin-top: 10px;" onclick="sendPrompt('Walk me through implementing NODE-ONet in PyTorch with torchdiffeq, including the physics-regularised loss')">Implementation walkthrough ↗</button>
+    </div>
+  </div>
+
+  <!-- TAB 4: Comparison -->
+  <div id="tab-compare" class="tab-panel">
+    <div class="card">
+      <h3>Method comparison</h3>
+      <p class="desc">Adjust problem difficulty to see how each approach scales. Higher values simulate longer integration horizons / more complex PDEs.</p>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+        <span class="label" style="margin: 0; white-space: nowrap;">Problem scale</span>
+        <input type="range" min="1" max="10" value="5" id="scale-slider" oninput="updateCompare()" style="flex: 1;">
+        <span id="scale-label" style="font-size: 13px; color: var(--color-text-secondary); min-width: 28px; text-align: right;">5</span>
+      </div>
+
+      <div id="compare-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;"></div>
+    </div>
+
+    <div class="card">
+      <h3>When to use which method</h3>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-danger">Standard Neural ODE</span>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Short integration windows, time-varying dynamics, when trajectory shape matters</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-blue">PINN only</span>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Known PDE structure, sparse data, single solution needed, steady-state problems</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-warn">Infinite-Time Neural ODE</span>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Equilibrium systems, implicit neural networks, large T, avoiding vanishing gradients</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md);">
+          <span class="badge badge-green">NODE-ONet (hybrid)</span>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Multi-query inference, scattered data, complex PDEs, production deployment</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// PINN training sim
+let epoch = 0;
+let trainInterval = null;
+function updateSim() {
+  const layers = document.getElementById('layers-slider').value;
+  const lr = document.getElementById('lr-slider').value;
+  document.getElementById('layers-label').textContent = layers + ' layer' + (layers > 1 ? 's' : '') + ' × 50 neurons';
+  document.getElementById('lr-label').textContent = lr + ' × 10⁻³';
+}
+function runTraining() {
+  if (trainInterval) return;
+  const layers = parseInt(document.getElementById('layers-slider').value);
+  const lr = parseInt(document.getElementById('lr-slider').value);
+  const target = epoch + 500;
+  trainInterval = setInterval(() => {
+    epoch += 10;
+    const t = epoch / 2000;
+    const speed = lr / 5 * (1 + (layers - 1) * 0.3);
+    const pde = Math.max(0.001, Math.exp(-speed * 3.5 * t) * (1 + 0.1 * Math.sin(t * 20)));
+    const ic = Math.max(0.0001, Math.exp(-speed * 5 * t) * (1 + 0.05 * Math.sin(t * 30)));
+    document.getElementById('epoch-display').textContent = epoch;
+    document.getElementById('pde-val').textContent = pde.toFixed(4);
+    document.getElementById('ic-val').textContent = ic.toFixed(4);
+    document.getElementById('pde-bar').style.width = Math.round(Math.min(100, pde * 100)) + '%';
+    document.getElementById('ic-bar').style.width = Math.round(Math.min(100, ic * 100)) + '%';
+    if (epoch >= target) { clearInterval(trainInterval); trainInterval = null; }
+  }, 30);
+}
+function resetTraining() {
+  clearInterval(trainInterval); trainInterval = null;
+  epoch = 0;
+  document.getElementById('epoch-display').textContent = '0';
+  document.getElementById('pde-val').textContent = '1.000';
+  document.getElementById('ic-val').textContent = '1.000';
+  document.getElementById('pde-bar').style.width = '100%';
+  document.getElementById('ic-bar').style.width = '100%';
+}
+
+// Compare tab
+function updateCompare() {
+  const s = parseInt(document.getElementById('scale-slider').value);
+  document.getElementById('scale-label').textContent = s;
+  const methods = [
+    { name: 'Standard\nNeural ODE', nfe: Math.round(30 * s + 20), mem: Math.round(s * 12), speed: Math.max(2, 12 - s), stable: s < 6 ? 'Good' : 'Poor', color: '#E24B4A', lightbg: '#FCEBEB', darktext: '#501313' },
+    { name: 'PINN only', nfe: 'N/A', mem: Math.round(s * 3), speed: Math.round(10 - s * 0.5), stable: 'Good', color: '#378ADD', lightbg: '#E6F1FB', darktext: '#042C53' },
+    { name: 'Infinite-T\nNeural ODE', nfe: Math.round(8 + Math.log(s+1) * 3), mem: Math.round(s * 8), speed: Math.round(9 - Math.log(s+1)), stable: 'Excellent', color: '#BA7517', lightbg: '#FAEEDA', darktext: '#412402' },
+    { name: 'NODE-ONet\n(hybrid)', nfe: Math.round(12 + Math.log(s+1) * 2), mem: Math.round(s * 15), speed: Math.round(8), stable: 'Excellent', color: '#3B6D11', lightbg: '#EAF3DE', darktext: '#173404' },
+  ];
+  const grid = document.getElementById('compare-grid');
+  grid.innerHTML = methods.map(m => `
+    <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px; cursor: pointer;" onclick="sendPrompt('Tell me more about ${m.name.replace(/\n/, ' ')} for scale ${s} problems')">
+      <div style="font-size: 12px; font-weight: 500; color: ${m.color}; margin-bottom: 8px; white-space: pre-line;">${m.name}</div>
+      <div class="label">Solver calls</div>
+      <div style="font-size: 16px; font-weight: 500; margin-bottom: 6px;">${m.nfe}</div>
+      <div class="label">Relative memory</div>
+      <div style="font-size: 14px; margin-bottom: 6px;">${m.mem}×</div>
+      <div class="label">Stability</div>
+      <div style="font-size: 13px; color: ${m.stable === 'Excellent' ? '#1D9E75' : m.stable === 'Good' ? '#378ADD' : '#E24B4A'};">${m.stable}</div>
+    </div>`).join('');
+}
+updateCompare();
+</script>

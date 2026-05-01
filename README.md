@@ -9,7 +9,7 @@
 ## Live Demo
 
 **[→ Open Interactive Explainer]
-> **Note:** For full interactivity (sliders, training simulator, clickable architecture), download and open locally, or host via GitHub Pages.
+> **Note:** For full interactivity (sliders, training simulator, clickable architecture), download and open locally.
 
 ---
 

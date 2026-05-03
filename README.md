@@ -48,7 +48,7 @@
 
 EquilibriumDynamics is an end-to-end research platform that trains Physics-Informed Neural Networks (PINNs) to solve partial differential equations — without requiring any labelled solution data. The neural network learns by minimising the residual of the governing equation itself, evaluated at scattered collocation points via automatic differentiation.
 
-The platform is built on three pillars from the [EquilibriumDynamics methodology](https://github.com/david-spies/EquilibriumDynamics):
+The platform is built on three pillars of methodology:
 
 **Pillar 1 — Infinite Time Neural ODE:** Traditional Neural ODEs integrate from t=0 to t=T at O(T) cost. The Infinite Time formulation finds the steady-state h\* where f(h\*, θ)=0 using quasi-Newton root-finding — an O(1) operation independent of integration horizon.
 
@@ -76,6 +76,7 @@ The platform is built on three pillars from the [EquilibriumDynamics methodology
 
 Open directly in any modern browser. Covers all three pillars with interactive sliders, live loss simulation, and clickable architecture diagrams.
 
+Download and Open: infinite_time_neural_ode_explainer.html
 ---
 
 ## Architecture

@@ -74,9 +74,8 @@ The platform is built on three pillars of methodology:
 **Interactive explainer (no install needed):**
 [`infinite_time_neural_ode_explainer.html`](https://github.com/david-spies/EquilibriumDynamics/blob/main/infinite_time_neural_ode_explainer.html)
 
-Open directly in any modern browser. Covers all three pillars with interactive sliders, live loss simulation, and clickable architecture diagrams.
+Download and Open directly in any modern browser. Covers all three pillars with interactive sliders, live loss simulation, and clickable architecture diagrams.
 
-Download and Open: infinite_time_neural_ode_explainer.html
 ---
 
 ## Architecture

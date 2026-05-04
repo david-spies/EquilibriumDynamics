@@ -1,0 +1,10 @@
+# Exclude upload directories from uvicorn --reload watching.
+# Without this, dropping a pde.py or .pt file into these folders
+# triggers a full server reload that kills any running training task.
+backend/dynamic_models/
+backend/weights/
+frontend/
+.git/
+venv/
+__pycache__/
+*.pyc
